@@ -2,11 +2,18 @@
 Tests for models.
 """
 # from unittest.mock import patch
-
+# from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+# import uuid
+from core import models
+import datetime
 
-# from core import models
+# TEST_UUIDS_COUNT = 0
+# def mock_uuid():
+#     global TEST_UUIDS_COUNT
+#     TEST_UUIDS_COUNT += 1
+#     return uuid.UUID(int=TEST_UUIDS_COUNT)
 
 
 class ModelTests(TestCase):
@@ -51,6 +58,25 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
+    def test_create_report(self):
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+        report = models.ReportDetails.objects.create(
+            user=user,
+            title='Sample Title',
+            r_id='Sample report details',
+            date=datetime.date.today(),
+            customer_fname='fname.',
+            customer_lname='lname',
+            bedroom_count=1,
+            bathroom_count=1,
+            garage_type="Sample St",
+            basement=True,
+        )
+
+        self.assertEqual(str(report), report.title)
     # @patch('core.models.uuid.uuid4')
     # def test_recipe_file_name_uuid(self, mock_uuid):
     #     """Test generating image path."""
