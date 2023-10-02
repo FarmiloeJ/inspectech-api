@@ -1,19 +1,13 @@
 """
 Tests for models.
 """
-# from unittest.mock import patch
+
 # from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-# import uuid
+
 from core import models
 import datetime
-
-# TEST_UUIDS_COUNT = 0
-# def mock_uuid():
-#     global TEST_UUIDS_COUNT
-#     TEST_UUIDS_COUNT += 1
-#     return uuid.UUID(int=TEST_UUIDS_COUNT)
 
 
 class ModelTests(TestCase):
@@ -73,10 +67,11 @@ class ModelTests(TestCase):
             bedroom_count=1,
             bathroom_count=1,
             garage_type="Sample St",
-            basement=True,
+            basement_type=True,
         )
 
         self.assertEqual(str(report), report.title)
+
     # @patch('core.models.uuid.uuid4')
     # def test_recipe_file_name_uuid(self, mock_uuid):
     #     """Test generating image path."""

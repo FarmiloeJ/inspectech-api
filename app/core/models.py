@@ -11,13 +11,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-# from django.contrib.sites.models import Site
-# from django.contrib.contenttypes.models import ContentType
-# from django.contrib.contenttypes.fields import (
-#     GenericForeignKey,
-#     GenericRelation
-# )
-# import datetime
+
 
 # def recipe_image_file_path(instance, filename):
 #     """Generate file path for new recipe image."""
@@ -75,48 +69,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=uuid.uuid4,
         editable=False,
         unique=True,
-    )
+        )
     email = models.EmailField(max_length=255, unique=True)
     fname = models.CharField(max_length=25)
     lname = models.CharField(max_length=25)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    phone_number = models.PositiveIntegerField(default=0)
-    license = models.CharField(default=0, max_length=50)
-    signature = models.ImageField(null=True,
-                                  upload_to=signature_image_file_path)
-    company_id = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        null=True,
-    )
+    invited_user_count = models.SmallIntegerField(default=0)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-
-
-class Company(models.Model):
-    """Company Model"""
-    company_id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        unique=True
-    )
-    owner = models.CharField(max_length=30)
-    owner_email = models.CharField(max_length=75)
-    company_name = models.CharField(max_length=75)
-    company_addr = models.CharField(max_length=255)
-    phone_number = models.PositiveIntegerField(default=0)
-    logo = models.ImageField(null=True, upload_to=logo_image_file_path)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-
-    def __str__(self):
-        return self.company_name
 
 
 class ReportDetails(models.Model):
@@ -127,15 +90,9 @@ class ReportDetails(models.Model):
         editable=False,
         unique=True,
     )
-    company_id = models.ForeignKey(
-        Company,
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True,
-    )
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        null=True,
     )
     title = models.CharField(max_length=100)
     r_id = models.CharField(max_length=100)
@@ -145,8 +102,7 @@ class ReportDetails(models.Model):
     bedroom_count = models.SmallIntegerField(default=0)
     bathroom_count = models.SmallIntegerField(default=0)
     garage_type = models.CharField(max_length=10)
-    basement = models.BooleanField(default=False)
-    link = models.CharField(max_length=255, blank=True)
+    basement_type = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -326,8 +282,11 @@ class Exterior(models.Model):
     service_entry = models.TextField(null=True)
     wall_construction = models.TextField(null=True)
     exterior_doors = models.TextField(null=True)
-    exterior_ac1 = models.TextField(null=True)
-    exterior_ac2 = models.TextField(null=True)
+
+
+class ExteriorACUnit(Exterior):
+    """AC Sub-Class"""
+    exterior_ac = models.TextField(null=True)
 
 
 class GarageCarport(models.Model):
@@ -411,7 +370,7 @@ class Interior(models.Model):
     attic = models.TextField(null=True)
 
 
-class BasementModel(models.Model):
+class Basement(models.Model):
     """Basement Model"""
     report_uuid = models.ForeignKey(
         ReportDetails,
@@ -422,7 +381,6 @@ class BasementModel(models.Model):
     foundation = models.TextField(null=True)
     floor = models.TextField(null=True)
     seismic_bolts = models.TextField(null=True)
-    drainage = models.TextField(null=True)
     drainage = models.TextField(null=True)
     girders_beams = models.TextField(null=True)
     columns = models.TextField(null=True)
@@ -531,3 +489,111 @@ class DiningRoom(models.Model):
         null=True
     )
     dining_room = models.TextField(null=True)
+
+
+class InspectionReport(models.Model):
+    """Inspection Report Model"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    report_details = models.ForeignKey(
+        ReportDetails,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    overview = models.ForeignKey(
+        Overview,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    summary = models.ForeignKey(
+        Summary,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    photos = models.ForeignKey(
+        Photos,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    receipt_invoice = models.ForeignKey(
+        ReceiptInvoice,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    grounds = models.ForeignKey(
+        Grounds,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    roof = models.ForeignKey(
+        Roof,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    exterior = models.ForeignKey(
+        Exterior,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    garage = models.ForeignKey(
+        GarageCarport,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    kitchen = models.ForeignKey(
+        Kitchen,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    laundry = models.ForeignKey(
+        Laundry,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    bathroom = models.ForeignKey(
+        Bathroom,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    basement = models.ForeignKey(
+        Basement,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    crawlspace = models.ForeignKey(
+        CrawlSpace,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    plumbing = models.ForeignKey(
+        Plumbing,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    heatingsystem = models.ForeignKey(
+        HeatingSystem,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    electrical_cooling = models.ForeignKey(
+        ElectricalCoolingSystems,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    living_room = models.ForeignKey(
+        LivingRoom,
+        on_delete=models.CASCADE,
+        null=True
+    )
+    dining_room = models.ForeignKey(
+        DiningRoom,
+        on_delete=models.CASCADE,
+        null=True
+    )
+
+    def create(self, report_details, **validated_data):
+        """Helper function to create inspection report"""
+        report_details(**validated_data)
+        return InspectionReport
